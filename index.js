@@ -8,6 +8,9 @@ const movies = []
 
 // 查找 DOM 節點
 const dataPanel = document.querySelector('#data-panel')
+const searchForm = document.querySelector('#search-form')
+const searchInput = document.querySelector('#search-input')
+const reset = document.querySelector('#reset-button')
 
 // 函式：渲染電影清單
 function renderMovieList(data) {
@@ -46,7 +49,6 @@ function showMovieModal(id) {
   .then(response => {
     const data = response.data.results
     
-    console.log(data.image)
     movieTitle.innerText = data.title
     movieDate.innerText = 'Release Date: ' + data.release_date
     movieDescription.innerText = data.description
@@ -62,6 +64,27 @@ dataPanel.addEventListener('click', function onPanelClicked(event){
   if (eventTarget.matches('.btn-show-movie')){
     showMovieModal(Number(eventTarget.dataset.id))
   }
+})
+
+// Search Form
+searchForm.addEventListener('submit', function onSearchFormSubmitted(event) {
+  event.preventDefault()
+  const keyword = searchInput.value.trim().toLowerCase()
+  let filteredMovies = []
+  
+  filteredMovies = movies.filter((movie) => 
+   movie.title.toLowerCase().includes(keyword)
+  )
+
+  if(filteredMovies.length === 0) {
+    return alert('Please insert a valid keyword!')
+  }
+
+  renderMovieList(filteredMovies)
+})
+
+reset.addEventListener('click', function reset(event){
+  renderMovieList(movies)
 })
 
 // 非同步處理獲取電影資料
