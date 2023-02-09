@@ -1,7 +1,8 @@
-// URLs
+// URLs & requirements
 const BASE_URL = "https://webdev.alphacamp.io"
 const INDEX_URL = BASE_URL + "/api/movies/"
 const IMG_URL = BASE_URL + "/posters/"
+const MOVIES_PER_PAGE = 12
 
 // 定義變數
 const movies = []
@@ -11,6 +12,7 @@ const dataPanel = document.querySelector('#data-panel')
 const searchForm = document.querySelector('#search-form')
 const searchInput = document.querySelector('#search-input')
 const reset = document.querySelector('#reset-button')
+const paginator = document.querySelector('#paginator')
 
 // 函式：渲染電影清單
 function renderMovieList(data) {
@@ -36,6 +38,25 @@ function renderMovieList(data) {
   })
 
   dataPanel.innerHTML = rawHTML
+}
+
+function renderPages(amount) {
+  const numberOfPage = Math.ceil(amount / MOVIES_PER_PAGE)
+  let rawHTML = ''
+
+  for (let page = 1; page <= numberOfPage; page++) {
+    rawHTML += `
+        <li class="page-item"><a class="page-link" href="#" data-page="${page}">${page}</a></li>
+    `
+  }
+
+  paginator.innerHTML = rawHTML
+}
+
+// 函式：分頁渲染器
+function getMoviesByPage(page) {
+  const startIndex = (page - 1) * MOVIES_PER_PAGE
+  return movies.slice(startIndex, startIndex + MOVIES_PER_PAGE)
 }
 
 // 函式：DOM 跳出 Modal windows
@@ -82,6 +103,14 @@ dataPanel.addEventListener('click', function onPanelClicked(event){
   }
 })
 
+// paginator 監聽器
+paginator.addEventListener('click', function paginatorOnClicked(event){
+  if (event.target.tagName !== 'A') return
+
+  const page = Number(event.target.dataset.page) // dataset 裡出來的資訊會是 str
+  renderMovieList(getMoviesByPage(page))
+})
+
 // Search Form
 searchForm.addEventListener('submit', function onSearchFormSubmitted(event) {
   event.preventDefault()
@@ -107,5 +136,6 @@ reset.addEventListener('click', function reset(event){
 axios.get(INDEX_URL)
 .then(response => {
   movies.push(...response.data.results)
-  renderMovieList(movies)
+  renderPages(movies.length)
+  renderMovieList(getMoviesByPage(1))
 })
