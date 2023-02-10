@@ -6,6 +6,7 @@ const MOVIES_PER_PAGE = 12
 
 // 定義變數
 const movies = []
+let filteredMovies = []
 
 // 查找 DOM 節點
 const dataPanel = document.querySelector('#data-panel')
@@ -56,7 +57,9 @@ function renderPages(amount) {
 // 函式：分頁渲染器
 function getMoviesByPage(page) {
   const startIndex = (page - 1) * MOVIES_PER_PAGE
-  return movies.slice(startIndex, startIndex + MOVIES_PER_PAGE)
+  const data = filteredMovies.length ? filteredMovies : movies 
+
+  return data.slice(startIndex, startIndex + MOVIES_PER_PAGE)
 }
 
 // 函式：DOM 跳出 Modal windows
@@ -115,7 +118,6 @@ paginator.addEventListener('click', function paginatorOnClicked(event){
 searchForm.addEventListener('submit', function onSearchFormSubmitted(event) {
   event.preventDefault()
   const keyword = searchInput.value.trim().toLowerCase()
-  let filteredMovies = []
   
   filteredMovies = movies.filter((movie) => 
    movie.title.toLowerCase().includes(keyword)
@@ -125,11 +127,14 @@ searchForm.addEventListener('submit', function onSearchFormSubmitted(event) {
     return alert('Please insert a valid keyword!')
   }
 
-  renderMovieList(filteredMovies)
+  renderPages(filteredMovies.length) 
+  renderMovieList(getMoviesByPage(1))
 })
 
 reset.addEventListener('click', function reset(event){
-  renderMovieList(movies)
+  filteredMovies = [] // 先清空陣列，在 getMoviesByPage 中的條件才會正確
+  renderPages(movies.length)
+  renderMovieList(getMoviesByPage(1))
 })
 
 // 非同步處理獲取電影資料
