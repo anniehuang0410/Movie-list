@@ -7,6 +7,7 @@ const MOVIES_PER_PAGE = 12
 // 定義變數
 const movies = []
 let filteredMovies = []
+let currentPage = 1
 
 // 查找 DOM 節點
 const dataPanel = document.querySelector('#data-panel')
@@ -14,14 +15,15 @@ const searchForm = document.querySelector('#search-form')
 const searchInput = document.querySelector('#search-input')
 const reset = document.querySelector('#reset-button')
 const paginator = document.querySelector('#paginator')
+const switchMode = document.querySelector('#mode-switch-button')
 
-// 函式：渲染電影清單
+// 函式：渲染電影清單(卡片模式)
 function renderMovieList(data) {
-  let rawHTML = ''
-
-  data.forEach((item) => {
-    rawHTML += `
-     <div class="col-sm-3">
+  if (dataPanel.dataset.mode === 'card-mode') {
+    let rawHTML = ''
+    data.forEach((item) => {
+      rawHTML += `
+      <div class="col-sm-3">
         <div class="mb-2">
           <div class="card">
             <img src="${IMG_URL + item.image}" class="card-img-top" alt="Movie Poster">
@@ -35,10 +37,26 @@ function renderMovieList(data) {
           </div>
         </div>
       </div>
+    `})
+    dataPanel.innerHTML = rawHTML
+  } else if (dataPanel.dataset.mode === 'list-mode') {
+    let rawHTML = `<ul class="list-group">`
+    data.forEach((item) => { 
+      rawHTML += `
+      <li class="list-group-item d-flex justify-content-between border-end-0 border-start-0 rounded-0">
+       <div class="title-container p-2">
+        <h5 class="list-title">${item.title}</h5>
+       </div>
+       <div class="button-container p-2">
+        <button class="btn btn-primary btn-show-movie" data-bs-toggle="modal" data-bs-target="#movie-modal" data-id="${item.id}">More</button>
+        <button class="btn btn-info btn-add-movie" data-id="${item.id}">+</button>
+       </div>
+      </li>
     `
-  })
-
-  dataPanel.innerHTML = rawHTML
+    })
+    rawHTML += '</ul>'
+    dataPanel.innerHTML = rawHTML
+  }
 }
 
 function renderPages(amount) {
@@ -110,8 +128,9 @@ dataPanel.addEventListener('click', function onPanelClicked(event){
 paginator.addEventListener('click', function paginatorOnClicked(event){
   if (event.target.tagName !== 'A') return
 
-  const page = Number(event.target.dataset.page) // dataset 裡出來的資訊會是 str
-  renderMovieList(getMoviesByPage(page))
+  const page = Number(event.target.dataset.page)
+  currentPage = page // dataset 裡出來的資訊會是 str
+  renderMovieList(getMoviesByPage(currentPage))
 })
 
 // Search Form
@@ -127,8 +146,9 @@ searchForm.addEventListener('submit', function onSearchFormSubmitted(event) {
     return alert('Please insert a valid keyword!')
   }
 
+  currentPage = 1
   renderPages(filteredMovies.length) 
-  renderMovieList(getMoviesByPage(1))
+  renderMovieList(getMoviesByPage(currentPage))
 })
 
 reset.addEventListener('click', function reset(event){
@@ -137,10 +157,27 @@ reset.addEventListener('click', function reset(event){
   renderMovieList(getMoviesByPage(1))
 })
 
+// 切換呈現模式
+function changeDisplayMode(displayMode){
+  if (dataPanel.dataset.mode === displayMode) return
+  dataPanel.dataset.mode = displayMode
+}
+
+// 切換模式監聽器
+switchMode.addEventListener('click', function onSwitchModeClicked(event){
+  if(event.target.matches('#card-mode-button')){
+    changeDisplayMode('card-mode')
+    renderMovieList(getMoviesByPage(currentPage))  
+  } else if(event.target.matches('#list-mode-button')){
+    changeDisplayMode('list-mode')
+    renderMovieList(getMoviesByPage(currentPage))
+  }
+})
+
 // 非同步處理獲取電影資料
 axios.get(INDEX_URL)
 .then(response => {
   movies.push(...response.data.results)
   renderPages(movies.length)
-  renderMovieList(getMoviesByPage(1))
+  renderMovieList(getMoviesByPage(currentPage))
 })
