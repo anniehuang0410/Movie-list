@@ -152,14 +152,14 @@ searchForm.addEventListener('submit', function onSearchFormSubmitted(event) {
 })
 
 reset.addEventListener('click', function reset(event){
-  filteredMovies = [] // 先清空陣列，在 getMoviesByPage 中的條件才會正確
+  filteredMovies = [] //先清空陣列，在 getMoviesByPage 中的條件才會正確
   renderPages(movies.length)
   renderMovieList(getMoviesByPage(1))
 })
 
 // 切換呈現模式
 function changeDisplayMode(displayMode){
-  if (dataPanel.dataset.mode === displayMode) return
+  if (dataPanel.dataset.mode === displayMode) return //條件：讓畫面可以停留在此模式頁面上
   dataPanel.dataset.mode = displayMode
 }
 
